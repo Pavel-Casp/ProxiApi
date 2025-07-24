@@ -1,96 +1,97 @@
 package jsonplaceholder
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"strconv"
+	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
-const baseURL = "https://jsonplaceholder.typicode.com"
-
 type Client struct {
-	httpClient *http.Client
+	client *resty.Client
 }
 
 func NewClient() *Client {
 	return &Client{
-		httpClient: &http.Client{},
+		client: resty.New().
+			SetBaseURL("https://jsonplaceholder.typicode.com").
+			SetHeader("Content-Type", "application/json").
+			SetTimeout(10 * time.Second).
+			SetRetryCount(3).
+			SetRetryWaitTime(1 * time.Second).
+			SetRetryMaxWaitTime(5 * time.Second).
+			AddRetryCondition(
+				func(r *resty.Response, err error) bool {
+					return r.StatusCode() >= 500 || err != nil
+				},
+			).
+			OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
+				fmt.Printf("Request: %s %s\n", req.Method, req.URL)
+				return nil
+			}).
+			OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
+				fmt.Printf("Response: %d %s\n", resp.StatusCode(), resp.Time())
+				return nil
+			}),
 	}
 }
 
-func (c *Client) doRequest(method, endpoint string, body io.Reader) (*http.Response, error) {
-	url := baseURL + endpoint
-
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("request failed with status code %d", resp.StatusCode)
-	}
-
-	return resp, nil
-}
-
-// Методы для работы с постами
-
+// Posts
 func (c *Client) GetPosts() ([]Post, error) {
-	resp, err := c.doRequest("GET", "/posts", nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	var posts []Post
-	if err := json.NewDecoder(resp.Body).Decode(&posts); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return posts, nil
+	_, err := c.client.R().
+		SetResult(&posts).
+		Get("/posts")
+	return posts, err
 }
 
 func (c *Client) GetPostByID(id int) (*Post, error) {
-	resp, err := c.doRequest("GET", "/posts/"+strconv.Itoa(id), nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	var post Post
-	if err := json.NewDecoder(resp.Body).Decode(&post); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return &post, nil
+	_, err := c.client.R().
+		SetResult(&post).
+		Get("/posts/" + fmt.Sprint(id))
+	return &post, err
 }
 
 func (c *Client) CreatePost(post Post) (*Post, error) {
-	body, err := json.Marshal(post)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal post: %w", err)
-	}
+	var result Post
+	_, err := c.client.R().
+		SetBody(post).
+		SetResult(&result).
+		Post("/posts")
+	return &result, err
+}
 
-	resp, err := c.doRequest("POST", "/posts", bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+// Users
+func (c *Client) GetUsers() ([]User, error) {
+	var users []User
+	_, err := c.client.R().
+		SetResult(&users).
+		Get("/users")
+	return users, err
+}
 
-	var createdPost Post
-	if err := json.NewDecoder(resp.Body).Decode(&createdPost); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
+func (c *Client) GetUserByID(id int) (*User, error) {
+	var user User
+	_, err := c.client.R().
+		SetResult(&user).
+		Get("/users/" + fmt.Sprint(id))
+	return &user, err
+}
 
-	return &createdPost, nil
+// Comments
+func (c *Client) GetComments() ([]Comment, error) {
+	var comments []Comment
+	_, err := c.client.R().
+		SetResult(&comments).
+		Get("/comments")
+	return comments, err
+}
+
+func (c *Client) GetCommentsByPostID(postID int) ([]Comment, error) {
+	var comments []Comment
+	_, err := c.client.R().
+		SetResult(&comments).
+		Get("/posts/" + fmt.Sprint(postID) + "/comments")
+	return comments, err
 }

@@ -10,40 +10,44 @@ import (
 func main() {
 	client := jsonplaceholder.NewClient()
 
-	// Пример получения всех постов
+	// Test Posts
 	posts, err := client.GetPosts()
 	if err != nil {
 		log.Fatalf("Failed to get posts: %v", err)
 	}
+	fmt.Printf("Got %d posts\n", len(posts))
 
-	fmt.Println("First 3 posts:")
-	for i, post := range posts {
-		if i >= 3 {
-			break
-		}
-		fmt.Printf("%d: %s\n", post.ID, post.Title)
-	}
-
-	// Пример получения конкретного поста
+	// Test single Post
 	post, err := client.GetPostByID(1)
 	if err != nil {
 		log.Fatalf("Failed to get post: %v", err)
 	}
+	fmt.Printf("Post 1: %s\n", post.Title)
 
-	fmt.Printf("\nPost with ID 1:\nTitle: %s\nBody: %s\n", post.Title, post.Body)
+	// Test Users
+	users, err := client.GetUsers()
+	if err != nil {
+		log.Fatalf("Failed to get users: %v", err)
+	}
+	fmt.Printf("Got %d users\n", len(users))
 
-	// Пример создания поста
+	// Test Comments
+	comments, err := client.GetCommentsByPostID(1)
+	if err != nil {
+		log.Fatalf("Failed to get comments: %v", err)
+	}
+	fmt.Printf("Got %d comments for post 1\n", len(comments))
+
+	// Test Post creation
 	newPost := jsonplaceholder.Post{
 		UserID: 1,
 		Title:  "New Post",
-		Body:   "This is a new post created by the client",
+		Body:   "This is a new post created with Resty",
 	}
 
 	createdPost, err := client.CreatePost(newPost)
 	if err != nil {
 		log.Fatalf("Failed to create post: %v", err)
 	}
-
-	fmt.Printf("\nCreated post:\nID: %d\nTitle: %s\nBody: %s\n",
-		createdPost.ID, createdPost.Title, createdPost.Body)
+	fmt.Printf("Created post with ID: %d\n", createdPost.ID)
 }
