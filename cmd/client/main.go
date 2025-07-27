@@ -5,49 +5,54 @@ import (
 	"log"
 
 	"github.com/Pavel-Casp/ProxiApi/internal/client/jsonplaceholder"
+	"github.com/Pavel-Casp/ProxiApi/internal/config"
 )
 
 func main() {
-	client := jsonplaceholder.NewClient()
+	log.Println("Starting ProxiApi client...")
 
-	// Test Posts
+	// Load configuration
+	cfg := config.Load()
+	log.Printf("Configuration loaded: %+v\n", cfg)
+
+	// Initialize client
+	client := jsonplaceholder.NewClient(cfg)
+
+	// Test API endpoints
+	if err := testEndpoints(client); err != nil {
+		log.Fatalf("API test failed: %v", err)
+	}
+
+	log.Println("All tests completed successfully")
+}
+
+func testEndpoints(client *jsonplaceholder.Client) error {
+	// Test getting posts
 	posts, err := client.GetPosts()
 	if err != nil {
-		log.Fatalf("Failed to get posts: %v", err)
+		return fmt.Errorf("GetPosts failed: %w", err)
 	}
-	fmt.Printf("Got %d posts\n", len(posts))
+	log.Printf("Retrieved %d posts\n", len(posts))
 
-	// Test single Post
+	// Test getting single post
 	post, err := client.GetPostByID(1)
 	if err != nil {
-		log.Fatalf("Failed to get post: %v", err)
+		return fmt.Errorf("GetPostByID failed: %w", err)
 	}
-	fmt.Printf("Post 1: %s\n", post.Title)
+	log.Printf("Retrieved post #1: %q\n", post.Title)
 
-	// Test Users
-	users, err := client.GetUsers()
-	if err != nil {
-		log.Fatalf("Failed to get users: %v", err)
-	}
-	fmt.Printf("Got %d users\n", len(users))
-
-	// Test Comments
-	comments, err := client.GetCommentsByPostID(1)
-	if err != nil {
-		log.Fatalf("Failed to get comments: %v", err)
-	}
-	fmt.Printf("Got %d comments for post 1\n", len(comments))
-
-	// Test Post creation
+	// Test creating post
 	newPost := jsonplaceholder.Post{
 		UserID: 1,
-		Title:  "New Post",
-		Body:   "This is a new post created with Resty",
+		Title:  "Test Post",
+		Body:   "This is a test post created by ProxiApi",
 	}
 
 	createdPost, err := client.CreatePost(newPost)
 	if err != nil {
-		log.Fatalf("Failed to create post: %v", err)
+		return fmt.Errorf("CreatePost failed: %w", err)
 	}
-	fmt.Printf("Created post with ID: %d\n", createdPost.ID)
+	log.Printf("Created new post with ID: %d\n", createdPost.ID)
+
+	return nil
 }

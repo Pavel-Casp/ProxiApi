@@ -1,17 +1,16 @@
-# ProxiApi - REST Client with Resty
+# ProxiApi
 
-This project demonstrates a client for JSONPlaceholder API using Resty library.
+A configurable proxy client for JSONPlaceholder API with RESTy implementation.
 
 ## Features
 
-- Complete API client for JSONPlaceholder
+- Environment-based configuration
 - Retry mechanism with exponential backoff
-- Request/Response logging
-- Timeout handling
-- Structured error handling
+- Request/response logging
+- Comprehensive error handling
 
-## Installation
+## Configuration
 
-1. Clone the repository:
+1. Copy `.env.example` to `.env`:
 ```bash
-git clone https://github.com/Pavel-Casp/ProxiApi.git
+cp .env.example .env
