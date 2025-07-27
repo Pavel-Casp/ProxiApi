@@ -5,45 +5,54 @@ import (
 	"log"
 
 	"github.com/Pavel-Casp/ProxiApi/internal/client/jsonplaceholder"
+	"github.com/Pavel-Casp/ProxiApi/internal/config"
 )
 
 func main() {
-	client := jsonplaceholder.NewClient()
+	log.Println("Starting ProxiApi client...")
 
-	// Пример получения всех постов
+	// Load configuration
+	cfg := config.Load()
+	log.Printf("Configuration loaded: %+v\n", cfg)
+
+	// Initialize client
+	client := jsonplaceholder.NewClient(cfg)
+
+	// Test API endpoints
+	if err := testEndpoints(client); err != nil {
+		log.Fatalf("API test failed: %v", err)
+	}
+
+	log.Println("All tests completed successfully")
+}
+
+func testEndpoints(client *jsonplaceholder.Client) error {
+	// Test getting posts
 	posts, err := client.GetPosts()
 	if err != nil {
-		log.Fatalf("Failed to get posts: %v", err)
+		return fmt.Errorf("GetPosts failed: %w", err)
 	}
+	log.Printf("Retrieved %d posts\n", len(posts))
 
-	fmt.Println("First 3 posts:")
-	for i, post := range posts {
-		if i >= 3 {
-			break
-		}
-		fmt.Printf("%d: %s\n", post.ID, post.Title)
-	}
-
-	// Пример получения конкретного поста
+	// Test getting single post
 	post, err := client.GetPostByID(1)
 	if err != nil {
-		log.Fatalf("Failed to get post: %v", err)
+		return fmt.Errorf("GetPostByID failed: %w", err)
 	}
+	log.Printf("Retrieved post #1: %q\n", post.Title)
 
-	fmt.Printf("\nPost with ID 1:\nTitle: %s\nBody: %s\n", post.Title, post.Body)
-
-	// Пример создания поста
+	// Test creating post
 	newPost := jsonplaceholder.Post{
 		UserID: 1,
-		Title:  "New Post",
-		Body:   "This is a new post created by the client",
+		Title:  "Test Post",
+		Body:   "This is a test post created by ProxiApi",
 	}
 
 	createdPost, err := client.CreatePost(newPost)
 	if err != nil {
-		log.Fatalf("Failed to create post: %v", err)
+		return fmt.Errorf("CreatePost failed: %w", err)
 	}
+	log.Printf("Created new post with ID: %d\n", createdPost.ID)
 
-	fmt.Printf("\nCreated post:\nID: %d\nTitle: %s\nBody: %s\n",
-		createdPost.ID, createdPost.Title, createdPost.Body)
+	return nil
 }
