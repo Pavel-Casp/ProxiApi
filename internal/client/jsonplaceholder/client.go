@@ -15,20 +15,20 @@ type Client struct {
 
 func NewClient(cfg *config.Config) *Client {
 	client := resty.New().
-		SetBaseURL(cfg.APIBaseURL).
+		SetBaseURL(cfg.API.BaseURL).
 		SetHeader("Accept", "application/json").
 		SetHeader("Content-Type", "application/json").
-		SetTimeout(cfg.RequestTimeout).
-		SetRetryCount(cfg.MaxRetries).
-		SetRetryWaitTime(cfg.RetryWaitTime).
-		SetRetryMaxWaitTime(cfg.RetryMaxWait).
+		SetTimeout(cfg.API.RequestTimeout).
+		SetRetryCount(cfg.Retry.MaxRetries).
+		SetRetryWaitTime(cfg.Retry.WaitTime).
+		SetRetryMaxWaitTime(cfg.Retry.MaxWait).
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
 				return r.StatusCode() >= 500 || err != nil
 			},
 		)
 
-	if cfg.DebugMode {
+	if cfg.Debug.Enabled {
 		client.SetDebug(true).
 			OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
 				log.Printf("[DEBUG] Request: %s %s\nBody: %v\n",

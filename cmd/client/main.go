@@ -12,8 +12,13 @@ func main() {
 	log.Println("Starting ProxiApi client...")
 
 	// Load configuration
-	cfg := config.Load()
-	log.Printf("Configuration loaded: %+v\n", cfg)
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	log.Printf("Configuration loaded:\nAPI Base URL: %s\nTimeout: %v\n",
+		cfg.API.BaseURL, cfg.API.RequestTimeout)
 
 	// Initialize client
 	client := jsonplaceholder.NewClient(cfg)

@@ -1,16 +1,26 @@
-# ProxiApi
+## Конфигурация
 
-A configurable proxy client for JSONPlaceholder API with RESTy implementation.
+Сервис поддерживает несколько способов конфигурации (приоритет по порядку):
 
-## Features
+1. Переменные окружения
+2. `.env` файл
+3. `configs/config.yaml` файл
+4. Значения по умолчанию
 
-- Environment-based configuration
-- Retry mechanism with exponential backoff
-- Request/response logging
-- Comprehensive error handling
+### YAML-конфигурация
 
-## Configuration
+Пример `configs/config.yaml`:
 
-1. Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
+```yaml
+api:
+  base_url: "https://jsonplaceholder.typicode.com"
+  request_timeout: 10s
+
+retry:
+  max_retries: 3
+  wait_time: 1s
+  max_wait: 5s
+
+debug:
+  enabled: false
+  log_level: "info"
