@@ -1,26 +1,24 @@
-@"
-# Binaries for programs and plugins
+# Binaries
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-*.test
-*.out
 
-# Go workspace file
-go.work
-
-# Dependency directories
-vendor/
-bin/
-
-# IDE specific files
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# Environment files
+# Go
+bin/
+vendor/
+go.sum
+
+# Environment
 .env
-"@ | Out-File -FilePath .\.gitignore -Encoding utf8
+*.env.local
+
+# Logs
+*.log

@@ -1,0 +1,12 @@
+api:
+  base_url: "https://api.example.com"
+  request_timeout: 10s  # e.g. 10s, 30s, 1m
+
+retry:
+  max_retries: 3        # Number of retry attempts
+  wait_time: 1s         # Initial retry delay
+  max_wait: 5s          # Maximum retry delay
+
+debug:
+  enabled: false        # Enable debug mode
+  log_level: "info"     # Log level: debug, info, warn, error
